@@ -1,5 +1,6 @@
 package com.nontontv.indonesia.ui.navigasi
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -176,7 +177,7 @@ fun TampilanUtama() {
 }
 
 @Composable
-private fun ItemBawah(
+private fun RowScope.ItemBawah(
     ikon: ImageVector,
     label: String,
     rute: String,

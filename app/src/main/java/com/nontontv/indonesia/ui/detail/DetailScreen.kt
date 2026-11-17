@@ -285,7 +285,7 @@ private fun BarisKomentar(komentar: CommentItem) {
             )
             if (komentar.likeCount > 0) {
                 Text(
-                    text = "${FormatUtils.formatJumlah(komentar.likeCount.toLong)} suka",
+                    text = "${FormatUtils.formatJumlah(komentar.likeCount.toLong())} suka",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

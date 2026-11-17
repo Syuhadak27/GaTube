@@ -155,9 +155,20 @@ class PlaybackController @Inject constructor(
         _videoSaatIni.value = video
         _kualitasTerpilih.value = streamVideo.quality
 
+        val metadata = MediaMetadata.Builder()
+            .setTitle(video.item.title)
+            .setArtist(video.item.uploaderName)
+            .setArtworkUri(video.item.thumbnailUrl.toUriOrNull())
+            .build()
+
         val httpFactory = DefaultHttpDataSource.Factory()
         val videoSource = ProgressiveMediaSource.Factory(httpFactory)
-            .createMediaSource(MediaItem.Builder().setUri(streamVideo.url).build())
+            .createMediaSource(
+                MediaItem.Builder()
+                    .setUri(streamVideo.url)
+                    .setMediaMetadata(metadata)
+                    .build()
+            )
 
         val sumber: MediaSource = if (streamAudio != null) {
             val audioSource = ProgressiveMediaSource.Factory(httpFactory)
@@ -167,13 +178,6 @@ class PlaybackController @Inject constructor(
             videoSource
         }
 
-        player.setMediaMetadata(
-            MediaMetadata.Builder()
-                .setTitle(video.item.title)
-                .setArtist(video.item.uploaderName)
-                .setArtworkUri(video.item.thumbnailUrl.toUriOrNull())
-                .build()
-        )
         player.setMediaSource(sumber, posisiAwal)
         player.prepare()
         player.playWhenReady = true

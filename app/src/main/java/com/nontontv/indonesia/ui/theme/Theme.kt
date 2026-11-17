@@ -50,6 +50,6 @@ fun GaTubeTheme(
     MaterialTheme(
         colorScheme = skema,
         typography = MaterialTheme.typography,
-        konten = konten
+        content = konten
     )
 }
