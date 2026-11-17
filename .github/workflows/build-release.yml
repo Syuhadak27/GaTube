@@ -22,12 +22,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Siapkan Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install platform & build-tools Android 34
+      # Runner ubuntu-latest sudah menyediakan Android SDK. Jangan pakai
+      # android-actions/setup-android karena action itu mencoba menginstall
+      # paket "tools" yang sudah dihapus dari cmdline-tools modern.
+      - name: Pastikan SDK Android 34 terpasang
         run: |
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "Android SDK: $SDK"
+          SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER=$(command -v sdkmanager)
+          fi
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" --install "platforms;android-34" "build-tools;34.0.0"
 
       - name: Pastikan gradlew bisa dijalankan
         run: chmod +x gradlew
