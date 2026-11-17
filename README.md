@@ -30,7 +30,7 @@ serta **login ala Google TV** memakai kode perangkat.
 | Login Google TV | Kode 8 karakter format `ABCD-1234` (disimpan lokal), atau Mode Tamu. |
 | Sesi aman | Token disimpan di DataStore dengan enkripsi AES-256 GCM (AndroidKeyStore). |
 | Cek pembaruan | Otomatis cek GitHub Release saat aplikasi dibuka, dialog versi baru, unduh APK, buka installer. |
-| Rilis otomatis | GitHub Actions membuild APK + AAB dan membuat Release saat push tag `v*`. |
+| Rilis otomatis | GitHub Actions membuild APK saja dan membuat Release saat push tag `v*`. |
 
 ---
 
@@ -69,7 +69,9 @@ GaTube/
 │   └── release.keystore
 ├── keystore.properties
 ├── generate-keystore.sh
-├── .github/workflows/build-release.yml
+├── .github/workflows/
+│   ├── build-apk.yml       (build APK only -> artifact)
+│   └── build-release.yml   (build APK only + GitHub Release)
 ├── .gitignore
 ├── CHANGELOG.md
 └── README.md
@@ -203,13 +205,20 @@ git push origin v1.0.1
 
 GitHub Actions (`.github/workflows/build-release.yml`) akan:
 
-1. Membuild `app-release.apk` dan `app-release.aab` (sudah ditandatangani
-   memakai keystore di repo).
+1. Membuild APK release saja (sudah ditandatangani memakai keystore di repo,
+   tanpa AAB).
 2. Membuat GitHub Release bernama `GaTube v1.0.1`.
-3. Mengisi changelog dari daftar commit.
-4. Melampirkan `app-release.apk` dan `app-release.aab`.
+3. Mengisi changelog dari daftar commit antara tag sebelumnya dan tag ini.
+4. Melampirkan satu asset APK, misalnya `GaTube-v1.0.1.apk`.
 
-Cek hasilnya di tab **Actions** lalu tab **Releases**.
+Cek hasilnya di tab **Actions** lalu tab **Releases**. Workflow ini juga bisa
+dijalankan manual lewat **Actions > Build APK & Release GaTube > Run workflow**
+dengan mengisi field `tag`.
+
+Untuk hanya membuild APK tanpa membuat Release, jalankan
+**Actions > Build APK Only > Run workflow**, atau biarkan workflow
+`.github/workflows/build-apk.yml` berjalan otomatis saat push/PR ke `main`.
+APK bisa diunduh dari artifact pada halaman run tersebut.
 
 ### Aturan penentuan “versi baru”
 
@@ -267,16 +276,17 @@ untuk GaTube.
 # Debug
 ./gradlew assembleDebug
 
-# Release (dipakai keystore di repo)
+# Release (dipakai keystore di repo) — APK only
 ./gradlew assembleRelease
-./gradlew bundleRelease
 ```
 
 Output:
 
 - APK debug: `app/build/outputs/apk/debug/app-debug.apk`
 - APK release: `app/build/outputs/apk/release/app-release.apk`
-- AAB release: `app/build/outputs/bundle/release/app-release.aab`
+
+CI tidak membangun AAB. Bila ingin AAB untuk Play Store, jalankan manual
+`./gradlew bundleRelease` di lokal.
 
 ---
 

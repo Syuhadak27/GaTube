@@ -1,20 +1,36 @@
-name: Build & Release GaTube
+name: Build APK & Release GaTube
 
-# Workflow ini berjalan setiap ada push tag bertema v*, contoh: v1.0.0
+# Otomatis saat push tag v*, contoh: v1.0.1.
+# Bisa juga dijalankan manual dari tab Actions dengan mengisi tag.
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag GitHub Release (contoh: v1.0.1). Tag dibuat bila belum ada.'
+        required: true
+        type: string
+
+# softprops/action-gh-release butuh izin tulis untuk membuat release & upload aset.
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build APK & AAB Release
+  release:
+    name: Build APK & Buat GitHub Release
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout kode
+      - name: Checkout kode (termasuk semua tag)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Siapkan Java 17
         uses: actions/setup-java@v4
@@ -22,49 +38,80 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Runner ubuntu-latest sudah menyediakan Android SDK. Jangan pakai
-      # android-actions/setup-android karena action itu mencoba menginstall
-      # paket "tools" yang sudah dihapus dari cmdline-tools modern.
+      # Runner ubuntu-latest sudah punya Android SDK. Cukup pastikan platform
+      # & build-tools yang dipakai project tersedia, lalu terima lisensinya.
       - name: Pastikan SDK Android 34 terpasang
         run: |
-          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-          echo "Android SDK: $SDK"
+          set -euo pipefail
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          if [ -z "$SDK" ]; then
+            echo "::error::ANDROID_HOME / ANDROID_SDK_ROOT tidak diset oleh runner."
+            exit 1
+          fi
           SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
           if [ ! -x "$SDKMANAGER" ]; then
-            SDKMANAGER=$(command -v sdkmanager)
+            SDKMANAGER="$(command -v sdkmanager || true)"
+          fi
+          if [ -z "$SDKMANAGER" ] || [ ! -x "$SDKMANAGER" ]; then
+            echo "::error::sdkmanager tidak ditemukan di $SDK"
+            exit 1
           fi
           yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
-          "$SDKMANAGER" --install "platforms;android-34" "build-tools;34.0.0"
+          "$SDKMANAGER" --install \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "build-tools;35.0.0" > /dev/null
 
       - name: Pastikan gradlew bisa dijalankan
         run: chmod +x gradlew
 
-      - name: Build APK dan AAB release (keystore sudah ada di repo)
-        run: ./gradlew assembleRelease bundleRelease --stacktrace --no-daemon
+      # Hanya APK (bukan AAB) yang dibuat dan dilampirkan ke release.
+      - name: Build APK release (sudah ditandatangani)
+        run: ./gradlew assembleRelease --stacktrace --no-daemon
+
+      - name: Siapkan nama asset APK
+        id: apk
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' -print -quit)
+          if [ -z "$APK" ]; then
+            echo "::error::APK release tidak ditemukan di app/build/outputs/apk/release"
+            exit 1
+          fi
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          NAMA="GaTube-${TAG//\//-}.apk"
+          cp "$APK" "$NAMA"
+          echo "path=$NAMA" >> "$GITHUB_OUTPUT"
+          ls -lh "$NAMA"
 
       - name: Buat changelog dari commit
         id: changelog
         run: |
-          SEBELUM="${{ github.event.before }}"
-          if [ -z "$SEBELUM" ] || [ "$SEBELUM" = "0000000000000000000000000000000000000000" ]; then
-            ISI=$(git log --pretty=format:"- %s" -n 30)
+          set -euo pipefail
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          if git rev-parse -q --verify "refs/tags/$TAG" > /dev/null; then
+            SEBELUM=$(git describe --tags --abbrev=0 "$TAG^" 2>/dev/null || true)
+            if [ -n "$SEBELUM" ]; then
+              ISI=$(git log --pretty=format:'- %s' "$SEBELUM..$TAG")
+            else
+              ISI=$(git log --pretty=format:'- %s' -n 30 "$TAG")
+            fi
           else
-            ISI=$(git log --pretty=format:"- %s" "$SEBELUM"..HEAD)
+            ISI=$(git log --pretty=format:'- %s' -n 30)
           fi
           {
-            echo "body<<GATUBE_EOF"
+            echo 'body<<GATUBE_EOF'
             echo "$ISI"
-            echo "GATUBE_EOF"
+            echo 'GATUBE_EOF'
           } >> "$GITHUB_OUTPUT"
 
-      - name: Buat GitHub Release dan lampirkan APK/AAB
+      - name: Buat GitHub Release dan lampirkan APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: GaTube ${{ github.ref_name }}
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: GaTube ${{ github.event.inputs.tag || github.ref_name }}
           body: ${{ steps.changelog.outputs.body }}
+          files: ${{ steps.apk.outputs.path }}
+          fail_on_unmatched_files: true
           draft: false
           prerelease: false
-          files: |
-            app/build/outputs/apk/release/app-release.apk
-            app/build/outputs/bundle/release/app-release.aab
