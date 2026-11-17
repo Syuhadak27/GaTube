@@ -147,6 +147,11 @@ dependencies {
     // NewPipeExtractor: extractor YouTube legal, tersedia di JitPack.
     implementation("com.github.TeamNewPipe:NewPipeExtractor:v0.25.0")
 
+    // jsoup 1.22.x (transitif dari NewPipeExtractor) mereferensikan re2j secara
+    // opsional. Tanpa dependency ini, R8 gagal saat minify release dengan
+    // "Missing class com.google.re2j.Pattern / Matcher".
+    implementation("com.google.re2j:re2j:1.8")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")

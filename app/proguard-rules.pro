@@ -18,3 +18,7 @@
 # Umum.
 -dontwarn org.mozilla.javascript.**
 -dontwarn com.google.protobuf.**
+
+# jsoup memakai re2j secara opsional lewat Class.forName(). Kalau R8 tetap
+# menghapus kelasnya, jsoup otomatis fallback ke regex JDK — jangan gagal build.
+-dontwarn com.google.re2j.**
