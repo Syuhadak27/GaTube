@@ -1,0 +1,59 @@
+name: Build & Release GaTube
+
+# Workflow ini berjalan setiap ada push tag bertema v*, contoh: v1.0.0
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK & AAB Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      - name: Siapkan Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Siapkan Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Pastikan gradlew bisa dijalankan
+        run: chmod +x gradlew
+
+      - name: Build APK dan AAB release (keystore sudah ada di repo)
+        run: ./gradlew assembleRelease bundleRelease --stacktrace --no-daemon
+
+      - name: Buat changelog dari commit
+        id: changelog
+        run: |
+          SEBELUM="${{ github.event.before }}"
+          if [ -z "$SEBELUM" ] || [ "$SEBELUM" = "0000000000000000000000000000000000000000" ]; then
+            ISI=$(git log --pretty=format:"- %s" -n 30)
+          else
+            ISI=$(git log --pretty=format:"- %s" "$SEBELUM"..HEAD)
+          fi
+          {
+            echo "body<<GATUBE_EOF"
+            echo "$ISI"
+            echo "GATUBE_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Buat GitHub Release dan lampirkan APK/AAB
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: GaTube ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.body }}
+          draft: false
+          prerelease: false
+          files: |
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/bundle/release/app-release.aab
