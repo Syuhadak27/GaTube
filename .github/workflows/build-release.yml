@@ -25,6 +25,10 @@ jobs:
       - name: Siapkan Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install platform & build-tools Android 34
+        run: |
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+
       - name: Pastikan gradlew bisa dijalankan
         run: chmod +x gradlew
 
