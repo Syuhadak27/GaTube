@@ -7,8 +7,8 @@
     "namespace": "com.leplay.syd"
   },
   "version": {
-    "code": 22,
-    "name": "2.1.1"
+    "code": 23,
+    "name": "2.1.2"
   },
   "sdk": {
     "compile": 37,
