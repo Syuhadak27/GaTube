@@ -1,0 +1,55 @@
+{
+  "projectName": "NeoTube",
+
+  "app": {
+    "name": "NeoTube",
+    "packageName": "com.NeoTube",
+    "namespace": "com.NeoTube"
+  },
+
+  "version": {
+    "code": 21,
+    "name": "2.1"
+  },
+
+  "sdk": {
+    "compile": 37,
+    "min": 24,
+    "target": 36,
+    "java": 17
+  },
+
+  "update": {
+    "repo": "Syuhadak27/NeoTube",
+    "repoUrl": "https://github.com/Syuhadak27/NeoTube",
+    "apiUrl": "https://api.github.com/repos/Syuhadak27/NeoTube",
+    "channel": "releases",
+    "apkAsset": "NeoTube.apk"
+  },
+
+  "signing": {
+    "keystore": "release.keystore",
+    "storePassword": "12345678",
+    "keyAlias": "appkey",
+    "keyPassword": "12345678"
+  },
+
+  "build": {
+    "agp": "9.1.0",
+    "kotlin": "2.4.20",
+    "composeBom": "2026.09.00",
+    "media3": "1.10.1",
+    "newPipe": "v0.26.5",
+    "okhttp": "4.12.0",
+    "coil": "2.7.0",
+    "guava": "33.3.1-android",
+    "desugar": "2.1.5",
+    "backdrop": "2.0.1",
+    "shapes": "1.2.1",
+    "coreKtx": "1.19.0",
+    "activityCompose": "1.13.0",
+    "lifecycle": "2.9.4",
+    "junit": "4.13.2",
+    "json": "20240303"
+  }
+}

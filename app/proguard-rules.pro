@@ -1,24 +1,36 @@
-# Aturan ProGuard/R8 untuk GaTube.
 
-# NewPipeExtractor memakai refleksi dan parser JSON/JS, jadi jangan di-obfuscate.
--keep class org.schabi.newpipe.extractor.** { *; }
 -keep class org.mozilla.javascript.** { *; }
--keep class com.google.protobuf.** { *; }
+-keep class org.mozilla.classfile.ClassFileWriter
+-dontwarn org.mozilla.javascript.tools.**
+-dontwarn javax.script.**
+-dontwarn java.beans.**
+-dontwarn org.ietf.jgss.**
+-dontwarn javax.annotation.**
 
-# Model Gson.
--keepattributes Signature
--keepattributes *Annotation*
--keep class com.google.gson.reflect.TypeToken { *; }
--keep class * extends com.google.gson.reflect.TypeToken
--keep class com.nontontv.indonesia.data.remote.dto.** { *; }
 
-# Media3.
--keep class androidx.media3.** { *; }
+-dontwarn jdk.dynalink.**
 
-# Umum.
--dontwarn org.mozilla.javascript.**
--dontwarn com.google.protobuf.**
 
-# jsoup memakai re2j secara opsional lewat Class.forName(). Kalau R8 tetap
-# menghapus kelasnya, jsoup otomatis fallback ke regex JDK — jangan gagal build.
--dontwarn com.google.re2j.**
+
+-allowaccessmodification
+-repackageclasses
+-optimizationpasses 5
+
+
+
+
+
+
+-keep class org.schabi.newpipe.extractor.** { *; }
+-keep class com.grack.nanojson.** { *; }
+-keep class org.jsoup.** { *; }
+-dontwarn org.jsoup.**
+
+-dontwarn androidx.media3.**
+
+# Release logs are not user-visible; dropping the calls also drops every format string.
+-assumenosideeffects class android.util.Log {
+    public static *** v(...);
+    public static *** d(...);
+    public static *** i(...);
+}

@@ -1,160 +1,162 @@
-import java.util.Properties
+import groovy.json.JsonSlurper
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-// Baca keystore.properties dari root project. Password juga ditulis sebagai
-// cadangan secara hardcode di bawah (sesuai permintaan proyek pribadi).
-val keystoreProperties = Properties().apply {
-    val file = rootProject.file("keystore.properties")
-    if (file.exists()) {
-        file.inputStream().use { load(it) }
-    }
-}
+// Every app-level setting comes from the single root config file.
+val config = JsonSlurper().parse(rootProject.file("app-config.json")) as Map<*, *>
+val appConfig = config["app"] as Map<*, *>
+val versionConfig = config["version"] as Map<*, *>
+val sdkConfig = config["sdk"] as Map<*, *>
+val updateConfig = config["update"] as Map<*, *>
+val signingConfig = config["signing"] as Map<*, *>
+val deps = config["build"] as Map<*, *>
+
+val appName = appConfig["name"].toString()
+val packageName = appConfig["packageName"].toString()
+val javaVersion = sdkConfig["java"].toString()
+val releaseKeystore = rootProject.file(signingConfig["keystore"].toString())
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
 }
 
 android {
-    namespace = "com.nontontv.indonesia"
-    compileSdk = 34
+    namespace = appConfig["namespace"].toString()
+    compileSdk = sdkConfig["compile"].toString().toInt()
 
     defaultConfig {
-        applicationId = "com.nontontv.indonesia"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 12
-        versionName = "1.0.0"
+        applicationId = packageName
+        minSdk = sdkConfig["min"].toString().toInt()
+        targetSdk = sdkConfig["target"].toString().toInt()
+        versionCode = versionConfig["code"].toString().toInt()
+        versionName = versionConfig["name"].toString()
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        // Generated: the app name is no longer duplicated in strings.xml.
+        resValue("string", "app_name", appName)
+        buildConfigField("String", "APP_NAME", "\"$appName\"")
+        buildConfigField("String", "PACKAGE_NAME", "\"$packageName\"")
+        buildConfigField("String", "UPDATE_REPO", "\"${updateConfig["repo"]}\"")
+        buildConfigField("String", "UPDATE_REPO_URL", "\"${updateConfig["repoUrl"]}\"")
+        buildConfigField("String", "UPDATE_API_URL", "\"${updateConfig["apiUrl"]}\"")
+        buildConfigField("String", "UPDATE_CHANNEL", "\"${updateConfig["channel"]}\"")
+        buildConfigField("String", "UPDATE_APK_ASSET", "\"${updateConfig["apkAsset"]}\"")
     }
 
     signingConfigs {
         create("release") {
-            storeFile = file(keystoreProperties.getProperty("storeFile", "../keystore/release.keystore"))
-            storePassword = keystoreProperties.getProperty("storePassword", "12345678")
-            keyAlias = keystoreProperties.getProperty("keyAlias", "appkey")
-            keyPassword = keystoreProperties.getProperty("keyPassword", "12345678")
+            if (releaseKeystore.exists()) {
+                storeFile = releaseKeystore
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: signingConfig["storePassword"].toString()
+                keyAlias = System.getenv("KEY_ALIAS") ?: signingConfig["keyAlias"].toString()
+                keyPassword = System.getenv("KEY_PASSWORD") ?: signingConfig["keyPassword"].toString()
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+        getByName("debug") {
             enableV1Signing = true
             enableV2Signing = true
+            enableV3Signing = true
         }
     }
 
     buildTypes {
-        debug {
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
-            isMinifyEnabled = false
-        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.findByName("release")?.takeIf { releaseKeystore.exists() }
+                ?: signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
-            signingConfig = signingConfigs.getByName("release")
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
+        sourceCompatibility = JavaVersion.toVersion(javaVersion)
+        targetCompatibility = JavaVersion.toVersion(javaVersion)
+        isCoreLibraryDesugaringEnabled = true
     }
 
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
+    }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     packaging {
+        jniLibs {
+            // Extract native libraries on install. Uncompressed/embedded .so
+            // files are the usual cause of "problem parsing the package" on
+            // older Samsung Android 7/8 firmware.
+            useLegacyPackaging = true
+        }
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/LICENSE.md"
-            excludes += "/META-INF/LICENSE-notice.md"
+            excludes += listOf(
+                "META-INF/AL2.0",
+                "META-INF/LGPL2.1",
+                "META-INF/*.kotlin_module",
+                "META-INF/DEPENDENCIES",
+                "META-INF/com/android/build/**",
+                "META-INF/version-control-info.textproto",
+                "META-INF/*.version",
+                "google/**",
+                "kotlin/**",
+                "okhttp3/internal/publicsuffix/publicsuffixes.gz",
+                "org/mozilla/javascript/resources/Messages_*.properties",
+                "DebugProbesKt.bin",
+                "META-INF/**/LICENSE.txt",
+                "META-INF/**/LICENSE",
+            )
         }
     }
+}
 
-    lint {
-        abortOnError = false
-        checkReleaseBuilds = false
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(javaVersion))
     }
 }
 
 dependencies {
-    // Compose BOM menjaga semua versi Compose tetap selaras.
-    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
+    val media3 = deps["media3"].toString()
 
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
-    implementation("androidx.activity:activity-compose:1.9.3")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs_nio:${deps["desugar"]}")
 
+    implementation(platform("androidx.compose:compose-bom:${deps["composeBom"]}"))
+    implementation("androidx.core:core-ktx:${deps["coreKtx"]}")
+    implementation("androidx.activity:activity-compose:${deps["activityCompose"]}")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:${deps["lifecycle"]}")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:${deps["lifecycle"]}")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
-    debugImplementation("androidx.compose.ui:ui-tooling")
 
-    // Navigation + Hilt di Compose.
-    implementation("androidx.navigation:navigation-compose:2.8.3")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("io.github.kyant0:backdrop:${deps["backdrop"]}")
+    implementation("io.github.kyant0:shapes:${deps["shapes"]}")
 
-    // Hilt.
-    implementation("com.google.dagger:hilt-android:2.52")
-    ksp("com.google.dagger:hilt-android-compiler:2.52")
+    implementation("androidx.media3:media3-exoplayer:$media3")
+    implementation("androidx.media3:media3-exoplayer-dash:$media3")
+    implementation("androidx.media3:media3-exoplayer-hls:$media3")
+    implementation("androidx.media3:media3-datasource-okhttp:$media3")
+    implementation("androidx.media3:media3-database:$media3")
+    implementation("androidx.media3:media3-session:$media3")
+    implementation("androidx.media3:media3-ui-compose:$media3")
 
-    // Media3 / ExoPlayer untuk pemutar + MediaSession + background play + PiP.
-    implementation("androidx.media3:media3-exoplayer:1.4.1")
-    implementation("androidx.media3:media3-exoplayer-dash:1.4.1")
-    implementation("androidx.media3:media3-ui:1.4.1")
-    implementation("androidx.media3:media3-session:1.4.1")
-    implementation("androidx.media3:media3-datasource-okhttp:1.4.1")
+    implementation("com.github.TeamNewPipe:NewPipeExtractor:${deps["newPipe"]}")
+    implementation("com.squareup.okhttp3:okhttp:${deps["okhttp"]}")
+    implementation("io.coil-kt:coil-compose:${deps["coil"]}")
+    implementation("com.google.guava:guava:${deps["guava"]}")
 
-    // Jaringan: Retrofit + OkHttp.
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
-    // Room untuk history, favorit, dan riwayat pencarian.
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
-
-    // DataStore untuk pengaturan + session yang dienkripsi.
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
-
-    // Coil untuk memuat thumbnail.
-    implementation("io.coil-kt:coil-compose:2.7.0")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-
-    // NewPipeExtractor: extractor YouTube legal, tersedia di JitPack.
-    implementation("com.github.TeamNewPipe:NewPipeExtractor:v0.25.0")
-
-    // jsoup 1.22.x (transitif dari NewPipeExtractor) mereferensikan re2j secara
-    // opsional. Tanpa dependency ini, R8 gagal saat minify release dengan
-    // "Missing class com.google.re2j.Pattern / Matcher".
-    implementation("com.google.re2j:re2j:1.8")
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation("junit:junit:${deps["junit"]}")
+    testImplementation("org.json:json:${deps["json"]}")
 }

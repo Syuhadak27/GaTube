@@ -1,26 +1,19 @@
-# File hasil build Android Studio / Gradle.
-*.iml
+
 .gradle/
-/local.properties
-/.idea/
-.DS_Store
-/build
-app/build/
-**/build/
-/captures
-.externalNativeBuild
+.kotlin/
+build/
+captures/
+.externalNativeBuild/
 .cxx/
+
+
 local.properties
 
-# Hasil build yang tidak perlu masuk repo.
-*.apk
-*.aab
-*.ap_
-*.aab.map
+*.jks
 
-# PENTING: keystore dan keystore.properties SENGAJA TIDAK DI-IGNORE
-# karena proyek ini proyek pribadi. Jangan diteladani untuk proyek publik.
-!keystore/
-!keystore/**
-!keystore.properties
-!keystore/release.keystore
+*.apk
+
+
+.idea/
+*.iml
+.DS_Store
