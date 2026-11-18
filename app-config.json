@@ -1,10 +1,12 @@
 {
   "projectName": "NeoTube",
 
+  "_note": "app.namespace must match the Kotlin package (com.leplay.syd) because generated BuildConfig/R live there; app.packageName is the installable applicationId.",
+
   "app": {
     "name": "NeoTube",
     "packageName": "com.NeoTube",
-    "namespace": "com.NeoTube"
+    "namespace": "com.leplay.syd"
   },
 
   "version": {
