@@ -370,15 +370,15 @@ fun SettingsScreen(
                             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                         }
                     }
-                    val leplayRepo = "https://github.com/Syuhadak27/leplay"
+                    val appRepo = BuildConfig.UPDATE_REPO_URL
                     SettingsRow(
                         icon = Icons.Rounded.Code,
                         title = I18n.t("open_source", "Open Source"),
                         subtitle = I18n.t("open_source_sub", "View source code on GitHub"),
-                        onClick = { openRepo(leplayRepo) },
+                        onClick = { openRepo(appRepo) },
                         padded = false,
                     )
-                    val telegram = "https://github.com/cnyel9"
+                    val telegram = "https://github.com/Syuhadak27"
                     val openTelegram: () -> Unit = {
                         val app = Intent(Intent.ACTION_VIEW, Uri.parse(telegram))
                         val web = Intent(Intent.ACTION_VIEW, Uri.parse(telegram))

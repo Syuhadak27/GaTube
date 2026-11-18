@@ -1,20 +1,20 @@
 <div align="center">
 
-# LePlay
+# NeoTube
 
-<img src="docs/icon.png" width="200" alt="LePlay Icon" />
+<img src="docs/icon.png" width="200" alt="NeoTube Icon" />
 
 <br/>
 
 **A lightweight YouTube and YouTube Music client with a modern Liquid Glass UI, ad-free playback, synced lyrics, and high-quality downloads for Android phones, tablets, and TV.**
 
-[![Version](https://img.shields.io/github/v/release/Syuhadak27/leplay?style=flat-square&logo=android&logoColor=white&label=Version&color=E50914)](https://github.com/Syuhadak27/leplay/releases/latest)
-[![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](https://github.com/Syuhadak27/leplay/releases/latest)
+[![Version](https://img.shields.io/github/v/release/Syuhadak27/NeoTube?style=flat-square&logo=android&logoColor=white&label=Version&color=E50914)](https://github.com/Syuhadak27/NeoTube/releases/latest)
+[![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](https://github.com/Syuhadak27/NeoTube/releases/latest)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](LICENSE)
 
 <br/>
 
-[**Download Latest APK**](https://github.com/Syuhadak27/leplay/releases/latest)
+[**Download Latest APK**](https://github.com/Syuhadak27/NeoTube/releases/latest)
 
 > **NeoTube** · Android 7.0+ · One universal APK for phones, tablets, and Android TV. App name, package, version and update repository are all configured in [`app-config.json`](app-config.json).
 
@@ -22,7 +22,7 @@
 
 ---
 
-> **This build** is maintained at [Syuhadak27/leplay](https://github.com/Syuhadak27/leplay). Its in-app updater checks that repository's GitHub Releases; change the update channel in `app-config.json` → `update`.
+> **This build** is maintained at [Syuhadak27/NeoTube](https://github.com/Syuhadak27/NeoTube). Its in-app updater checks that repository's GitHub Releases; change the update channel in `app-config.json` → `update`.
 
 ---
 
@@ -45,7 +45,7 @@
 
 ## Download
 
-[**Download Latest APK (v0.1.7)**](https://github.com/Syuhadak27/leplay/releases/latest)
+[**Download Latest APK**](https://github.com/Syuhadak27/NeoTube/releases/latest)
 
 > **Version 0.1.7** · Android 7.0+ · One universal APK for phones, tablets, and Android TV.
 
@@ -53,7 +53,7 @@
 
 ## Disclaimer
 
-LePlay is an independent, open-source project and is **not affiliated with or endorsed by Google LLC or YouTube**. All content is streamed directly from YouTube's servers for personal, educational use. Provided "as is" under the GPL-3.0 license without warranty; users are responsible for complying with YouTube's Terms of Service and applicable copyright laws.
+NeoTube is an independent, open-source project and is **not affiliated with or endorsed by Google LLC or YouTube**. All content is streamed directly from YouTube's servers for personal, educational use. Provided "as is" under the GPL-3.0 license without warranty; users are responsible for complying with YouTube's Terms of Service and applicable copyright laws.
 
 ---
 

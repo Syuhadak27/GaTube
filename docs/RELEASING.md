@@ -5,15 +5,15 @@ NeoTube memakai GitHub Actions untuk build dan publish APK. Workflow-nya ada di
 
 ## Prasyarat
 
-- Punya akses push ke <https://github.com/Syuhadak27/leplay>
+- Punya akses push ke <https://github.com/Syuhadak27/NeoTube>
 - Git, plus JDK 21 dan Android SDK untuk build lokal (opsional)
 - [GitHub CLI](https://cli.github.com/) (`gh`) untuk cek status dan release (opsional)
 
 ```bash
-git clone git@github.com:Syuhadak27/leplay.git
-cd leplay
+git clone git@github.com:Syuhadak27/NeoTube.git
+cd NeoTube
 git remote -v
-# origin  git@github.com:Syuhadak27/leplay.git
+# origin  git@github.com:Syuhadak27/NeoTube.git
 ```
 
 Gunakan branch `main` untuk rilis.
@@ -38,7 +38,7 @@ git push origin main
    - build `:app:assembleRelease`;
    - commit perubahan versi sebagai `NeoTube X.Y.Z [skip ci]`;
    - membuat tag `vX.Y.Z` lewat GitHub Release API;
-   - publish GitHub Release berisi `LePlay.apk`.
+   - publish GitHub Release berisi `NeoTube.apk`.
 
    Contoh: push dari `0.1.7` (`versionCode 144`) menghasilkan `0.1.8`
    (`versionCode 145`), tag `v0.1.8`, dan release `NeoTube 0.1.8`.
@@ -46,20 +46,20 @@ git push origin main
 4. Pantau proses build:
 
 ```bash
-gh run list --repo Syuhadak27/leplay --workflow release.yml --limit 5
-gh run watch RUN_ID --repo Syuhadak27/leplay
+gh run list --repo Syuhadak27/NeoTube --workflow release.yml --limit 5
+gh run watch RUN_ID --repo Syuhadak27/NeoTube
 ```
 
-Atau buka <https://github.com/Syuhadak27/leplay/actions>.
+Atau buka <https://github.com/Syuhadak27/NeoTube/actions>.
 
 5. Cek atau download release:
 
 ```bash
-gh release view --repo Syuhadak27/leplay
+gh release view --repo Syuhadak27/NeoTube
 
 # Download APK dari release terbaru
-curl -L -o LePlay.apk \
-  https://github.com/Syuhadak27/leplay/releases/latest/download/LePlay.apk
+curl -L -o NeoTube.apk \
+  https://github.com/Syuhadak27/NeoTube/releases/latest/download/NeoTube.apk
 ```
 
 Kamu tidak perlu mengubah `versionCode` atau `versionName` untuk rilis normal.
@@ -89,8 +89,8 @@ Jalankan workflow dari `main` saat ini dan biarkan workflow membuat rilis patch
 berikutnya:
 
 ```bash
-gh workflow run release.yml --repo Syuhadak27/leplay
-gh run list --repo Syuhadak27/leplay --workflow release.yml --limit 5
+gh workflow run release.yml --repo Syuhadak27/NeoTube
+gh run list --repo Syuhadak27/NeoTube --workflow release.yml --limit 5
 ```
 
 Kamu juga bisa memakai **Actions → Build & Release → Run workflow** di GitHub.
@@ -119,8 +119,8 @@ git push origin v0.1.8
 Lalu verifikasi:
 
 ```bash
-gh run list --repo Syuhadak27/leplay --workflow release.yml --limit 5
-gh release view v0.1.8 --repo Syuhadak27/leplay
+gh run list --repo Syuhadak27/NeoTube --workflow release.yml --limit 5
+gh release view v0.1.8 --repo Syuhadak27/NeoTube
 ```
 
 Selalu buat tag dari commit yang `versionName`-nya cocok dengan tag, dan jangan
@@ -140,8 +140,8 @@ ls -lh app/build/outputs/apk/release/app-release.apk
 ```
 
 Build release memakai `app/release.keystore` kalau file itu ada. Pertahankan
-keystore yang sama dan `applicationId` yang sama (`com.leplay.syd`) supaya
-Android menerima update berikutnya.
+keystore yang sama dan `applicationId` yang sama (lihat `app.packageName` di
+`app-config.json`) supaya Android menerima update berikutnya.
 
 ---
 
@@ -150,13 +150,13 @@ Android menerima update berikutnya.
 Lihat langkah yang gagal pada sebuah run:
 
 ```bash
-gh run view RUN_ID --repo Syuhadak27/leplay --log-failed
+gh run view RUN_ID --repo Syuhadak27/NeoTube --log-failed
 ```
 
 Jalankan ulang workflow yang gagal:
 
 ```bash
-gh run rerun RUN_ID --repo Syuhadak27/leplay
+gh run rerun RUN_ID --repo Syuhadak27/NeoTube
 ```
 
 Hapus dan buat ulang tag hanya kalau release-nya rusak dan tag tersebut belum

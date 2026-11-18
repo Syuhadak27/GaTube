@@ -157,13 +157,7 @@ suspend fun fetchReleaseHistory(): List<ReleaseEntry> = withContext(Dispatchers.
  */
 internal val RELEASE_NOTES = """
     • NeoTube: full NeoTube branding in the UI, and search suggestions plus recent searches now follow the signed-in YouTube account.
-    • NeoTube 0.1.6: the Home screen now shows a YouTube-style History shelf from your signed-in Google account, and updates are delivered from github.com/Syuhadak27/leplay.
-    • NeoTube 0.1.5: Liquid Glass player morph, more reliable background playback, and downloads up to 4K HDR.
-    • NeoTube 0.0.6 test-1: channel Live tab gets Latest / Popular / Oldest sort chips with full paging, and video rows now show the view count together with the upload time in every language.
-    • NeoTube 0.0.5: Indonesian is now the default language with the full interface translated, video descriptions can be selected and copied, and viewer counts use Indonesian formatting (rb, jt, M).
-    • Ad-free YouTube and YouTube Music playback with a Liquid Glass UI.
-    • Personalised Shorts feed, synced lyrics, and high-quality downloads up to 4K HDR.
-    • Background playback, Picture-in-Picture, and Android TV mode.
+
 """.trimIndent()
 
 /** Outcome of the most recent update check, so the Settings version badge
