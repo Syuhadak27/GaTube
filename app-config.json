@@ -1,26 +1,21 @@
 {
   "projectName": "NeoTube",
-
   "_note": "app.namespace must match the Kotlin package (com.leplay.syd) because generated BuildConfig/R live there; app.packageName is the installable applicationId.",
-
   "app": {
     "name": "NeoTube",
     "packageName": "com.NeoTube",
     "namespace": "com.leplay.syd"
   },
-
   "version": {
-    "code": 21,
-    "name": "2.1"
+    "code": 22,
+    "name": "2.1.1"
   },
-
   "sdk": {
     "compile": 37,
     "min": 24,
     "target": 36,
     "java": 17
   },
-
   "update": {
     "repo": "Syuhadak27/NeoTube",
     "repoUrl": "https://github.com/Syuhadak27/NeoTube",
@@ -28,14 +23,12 @@
     "channel": "releases",
     "apkAsset": "NeoTube.apk"
   },
-
   "signing": {
     "keystore": "release.keystore",
     "storePassword": "12345678",
     "keyAlias": "appkey",
     "keyPassword": "12345678"
   },
-
   "build": {
     "agp": "9.1.0",
     "kotlin": "2.4.20",
